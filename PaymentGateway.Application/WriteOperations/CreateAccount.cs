@@ -5,62 +5,51 @@ using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.Events;
 using PaymentGateway.PublishedLanguage.WriteSide;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.WriteOperations
 {
     public class CreateAccount : IWriteOperation<MakeNewAccount>
     {
-        public IEventSender eventSender;
-        public CreateAccount(IEventSender eventSender)
-        {
-            this.eventSender = eventSender;
-        }
+        private readonly IEventSender _eventSender;
+        private readonly AccountOptions _accountOptions;
+        private readonly Database _database;
+        private readonly NewIban _ibanService;
 
+        public CreateAccount(IEventSender eventSender, AccountOptions accountOptions, Database database, NewIban ibanService)
+        {
+            _eventSender = eventSender;
+            _accountOptions = accountOptions;
+            _database = database;
+            _ibanService = ibanService;
+        }
 
         public void PerformOperation(MakeNewAccount operation)
         {
-            var random = new Random();
-
-            var database = Database.GetInstance();
-
-
-            var user = database.Persons?.First(e => e.Cnp == operation.UniqueIdentifier);
+            var user = _database.Persons.FirstOrDefault(e => e.Cnp == operation.UniqueIdentifier);
             if (user == null)
             {
                 throw new Exception("User invalid");
             }
 
+            var account = new BankAccount
+            {
+                Type = operation.AccountType,
+                Currency = operation.Valuta,
+                Balance = _accountOptions.InitialBalance,
+                Iban = _ibanService.GetNewIban(),
+                Limit = 200
+            };
 
-
-            //database.Persons.Remove(user);
-            var account = new BankAccount();
-            account.Type = operation.AccountType;
-            account.Currency = operation.Valuta;
-            account.Balance = 0;
-            account.Iban = NewIban.GetNewIban();
-            account.Limit = 200;
-
-            database.BankAccounts.Add(account);
+            _database.BankAccounts.Add(account);
             user.Accounts.Add(account);
-            database.SaveChanges();
-            //database.Persons.Add(user);
+            _database.SaveChanges();
 
-            AccountMade ec = new AccountMade();
-
-            ec.Name = user.Name;
-            eventSender.SendEvent(ec);
-
-
-
-
-
-
-
+            AccountMade ec = new AccountMade
+            {
+                Name = user.Name
+            };
+            _eventSender.SendEvent(ec);
         }
-
     }
 }
