@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Application.WriteOperations;
-using PaymentGateway.PublishedLanguage.WriteSide;
+using PaymentGateway.PublishedLanguage.Commands;
+using PaymentGateway.Application.ReadOperations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace PaymentGateway.WebApi.Controllers
 {
@@ -9,18 +13,31 @@ namespace PaymentGateway.WebApi.Controllers
     public class AccountController : ControllerBase
     {
         private readonly CreateAccount _createAccountCommandHandler;
-        public AccountController(CreateAccount createAccountCommandHandler)
+        private readonly ListOfAccounts.QueryHandler _queryHandler;
+        public AccountController(CreateAccount createAccountCommandHandler, ListOfAccounts.QueryHandler queryHandler)
         {
             _createAccountCommandHandler = createAccountCommandHandler;
+            _queryHandler = queryHandler;
         }
 
         [HttpPost]
         [Route("Create")]
-        public string CreateAccount(MakeNewAccount command)
+        public async Task<string> CreateAccount(MakeNewAccount command, CancellationToken cancellationToken)
         {
             //CreateAccount request = new CreateAccount(new EventSender());
-            _createAccountCommandHandler.PerformOperation(command);
+            //_createAccountCommandHandler.PerformOperation(command);
+            await _createAccountCommandHandler.Handle(command, cancellationToken);
+
             return "OK";
+        }
+
+        [HttpGet]
+        [Route("ListOfAccounts")]
+        public async Task<List<ListOfAccounts.Model>> GetListOfAccounts([FromQuery] ListOfAccounts.Query query, CancellationToken cancellationToken)
+        {
+
+            var result = await _queryHandler.Handle(query, cancellationToken);
+            return result;
         }
     }
 }

@@ -7,7 +7,7 @@ using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.Data;
 using PaymentGateway.ExternalService;
 using PaymentGateway.Models;
-using PaymentGateway.PublishedLanguage.WriteSide;
+using PaymentGateway.PublishedLanguage.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -49,7 +49,8 @@ namespace PaymentGateway
             };
 
             var enrollCustomerOperation = serviceProvider.GetRequiredService<EnrollCustomerOperation>();
-            enrollCustomerOperation.PerformOperation(enrollCustomer);
+            //enrollCustomerOperation.PerformOperation(enrollCustomer);
+            enrollCustomerOperation.Handle(enrollCustomer, default).GetAwaiter().GetResult();
 
             var makeAccountDetails = new MakeNewAccount
             {
@@ -57,8 +58,9 @@ namespace PaymentGateway
                 AccountType = "Debit",
                 Valuta = "Eur"
             };
-            var makeAccountOperation = serviceProvider.GetRequiredService<CreateAccount>(); 
-            makeAccountOperation.PerformOperation(makeAccountDetails);
+            var makeAccountOperation = serviceProvider.GetRequiredService<CreateAccount>();
+            //makeAccountOperation.PerformOperation(makeAccountDetails);
+            makeAccountOperation.Handle(makeAccountDetails, default).GetAwaiter().GetResult();
 
 
 
@@ -71,7 +73,8 @@ namespace PaymentGateway
             };
 
             var makeDeposit = serviceProvider.GetRequiredService<DepositMoney>();
-            makeDeposit.PerformOperation(depositDetails);
+            //makeDeposit.PerformOperation(depositDetails);
+            makeDeposit.Handle(depositDetails, default).GetAwaiter().GetResult();
 
             var withdrawDetails = new MakeWithdraw
             {
@@ -81,7 +84,8 @@ namespace PaymentGateway
             };
 
             var makeWithdraw = serviceProvider.GetRequiredService<WithdrawMoney>();
-            makeWithdraw.PerformOperation(withdrawDetails);
+            //makeWithdraw.PerformOperation(withdrawDetails);
+            makeWithdraw.Handle(withdrawDetails, default).GetAwaiter().GetResult();
 
             var produs = new Product
             {
@@ -137,7 +141,18 @@ namespace PaymentGateway
             };
 
             var purchaseProduct = serviceProvider.GetRequiredService<PurchaseProduct>();
-            purchaseProduct.PerformOperation(comanda);
+            //purchaseProduct.PerformOperation(comanda);
+            purchaseProduct.Handle(comanda, default).GetAwaiter().GetResult();
+
+            var query = new Application.ReadOperations.ListOfAccounts.Query
+            {
+                PersonId = 1
+            };
+
+            var handler = serviceProvider.GetRequiredService<ListOfAccounts.QueryHandler>();
+            //var result = handler.PerformOperation(query);
+            var result = handler.Handle(query, default).GetAwaiter().GetResult();
+
         }
     }
 }

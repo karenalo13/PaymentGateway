@@ -19,8 +19,9 @@ namespace PaymentGateway.Application.ReadOperations
            
             if (ibans.Count == 0)
                 return "1";
-
-            return (long.Parse(ibans.Last()) + 1).ToString();
+            
+            return (_database.BankAccounts.Count()+1).ToString();
+            //return (int.Parse(ibans.Last()) + 1).ToString();
         }
     }
 }

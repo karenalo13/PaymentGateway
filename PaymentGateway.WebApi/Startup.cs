@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application;
-using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.ExternalService;
 using PaymentGateway.WebApi.Swagger;
 
@@ -27,6 +26,11 @@ namespace PaymentGateway.WebApi
             services.AddSingleton<IEventSender, EventSender>();
             services.RegisterBusinessServices(Configuration);
             services.AddSwagger(Configuration["Identity:Authority"]);
+
+
+
+        
+
 
             // NEVER USE
             //services.BuildServiceProvider(); => serviceProvider...lista de "matrite"

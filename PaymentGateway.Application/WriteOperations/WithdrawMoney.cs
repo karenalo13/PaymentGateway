@@ -1,17 +1,17 @@
 ﻿using Abstractions;
+using MediatR;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
+using PaymentGateway.PublishedLanguage.Commands;
 using PaymentGateway.PublishedLanguage.Events;
-using PaymentGateway.PublishedLanguage.WriteSide;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.WriteOperations
 {
-   public class WithdrawMoney : IWriteOperation<MakeWithdraw>
+    public class WithdrawMoney : IRequestHandler<MakeWithdraw>
     {
         public IEventSender eventSender;
         private readonly Database _database;
@@ -22,16 +22,16 @@ namespace PaymentGateway.Application.WriteOperations
             _database = database;
         }
 
-        public void PerformOperation(MakeWithdraw operation)
+        public Task<Unit> Handle(MakeWithdraw request, CancellationToken cancellationToken)
         {
-            var account = _database.BankAccounts.FirstOrDefault(acc => acc.Iban == operation.Iban);
+            var account = _database.BankAccounts.FirstOrDefault(acc => acc.Iban == request.Iban);
             if(account== null)
             {
                 throw new Exception("invalid account");
 
             }
 
-            var user = _database.Persons.FirstOrDefault(pers => pers.Cnp == operation.Cnp );
+            var user = _database.Persons.FirstOrDefault(pers => pers.Cnp == request.Cnp );
             if (user == null)
             {
                 throw new Exception("User not found");
@@ -40,28 +40,28 @@ namespace PaymentGateway.Application.WriteOperations
             {
                 throw new Exception("invalid attempt");
             }
-            if (account.Limit < operation.Amount)
+            if (account.Limit < request.Amount)
             {
                 throw new Exception("cannot withdraw this amount");
             }
-            if (account.Balance < operation.Amount)
+            if (account.Balance < request.Amount)
             {
                 throw new Exception("insufficient funds");
             }
             var transaction = new Transaction();
-            transaction.Amount = operation.Amount;
+            transaction.Amount = request.Amount;
             transaction.Currency = account.Currency;
             transaction.Date = DateTime.UtcNow;
             transaction.Type = "Withdraw";
-            account.Balance -= operation.Amount;
+            account.Balance -= request.Amount;
             _database.SaveChanges();
 
             WithdrawMade wm = new WithdrawMade();
-            wm.Amount = operation.Amount;
-            wm.Iban = operation.Iban;
+            wm.Amount = request.Amount;
+            wm.Iban = request.Iban;
             eventSender.SendEvent(wm);
 
-
+            return Unit.Task;
 
         }
     }

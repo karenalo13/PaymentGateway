@@ -3,13 +3,16 @@ using PaymentGateway.Application.ReadOperations;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.Events;
-using PaymentGateway.PublishedLanguage.WriteSide;
 using System;
 using System.Linq;
+using MediatR;
+using PaymentGateway.PublishedLanguage.Commands;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace PaymentGateway.Application.WriteOperations
 {
-    public class CreateAccount : IWriteOperation<MakeNewAccount>
+    public class CreateAccount : IRequestHandler<MakeNewAccount>
     {
         private readonly IEventSender _eventSender;
         private readonly AccountOptions _accountOptions;
@@ -24,9 +27,9 @@ namespace PaymentGateway.Application.WriteOperations
             _ibanService = ibanService;
         }
 
-        public void PerformOperation(MakeNewAccount operation)
+        public Task<Unit> Handle(MakeNewAccount request, CancellationToken cancellationToken)
         {
-            var user = _database.Persons.FirstOrDefault(e => e.Cnp == operation.UniqueIdentifier);
+            var user = _database.Persons.FirstOrDefault(e => e.Cnp == request.UniqueIdentifier);
             if (user == null)
             {
                 throw new Exception("User invalid");
@@ -34,8 +37,8 @@ namespace PaymentGateway.Application.WriteOperations
 
             var account = new BankAccount
             {
-                Type = operation.AccountType,
-                Currency = operation.Valuta,
+                Type = request.AccountType,
+                Currency = request.Valuta,
                 Balance = _accountOptions.InitialBalance,
                 Iban = _ibanService.GetNewIban(),
                 Limit = 200
@@ -50,6 +53,7 @@ namespace PaymentGateway.Application.WriteOperations
                 Name = user.Name
             };
             _eventSender.SendEvent(ec);
+            return Unit.Task;
         }
     }
 }
