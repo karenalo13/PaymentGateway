@@ -7,6 +7,7 @@ using MediatR;
 using System.Threading.Tasks;
 using PaymentGateway.PublishedLanguage.Commands;
 using System.Threading;
+using PaymentGateway.PublishedLanguage.Events;
 
 namespace PaymentGateway.Application.WriteOperations
 {
@@ -57,7 +58,7 @@ namespace PaymentGateway.Application.WriteOperations
 
             _database.SaveChanges();
 
-            EnrollCustomer ec = new EnrollCustomer
+            var ec = new CustomerEnrolled
             {
                 Name = customer.Name,
                 UniqueIdentifier = customer.Cnp,

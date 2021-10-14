@@ -13,13 +13,15 @@ using PaymentGateway.PublishedLanguage.Commands;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PaymentGateway
 {
     class Program
     {
         static IConfiguration Configuration;
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -31,7 +33,10 @@ namespace PaymentGateway
             // setup
             var services = new ServiceCollection();
             services.RegisterBusinessServices(Configuration);
-            
+
+            var source = new CancellationTokenSource();
+            var cancellationToken = source.Token;
+
             //services.AddSingleton<IEventSender, EventSender>();
             services.AddSingleton(Configuration);
             services.AddMediatR(typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly);
@@ -40,6 +45,7 @@ namespace PaymentGateway
             var serviceProvider = services.BuildServiceProvider();
             var database = serviceProvider.GetRequiredService<Database>();
             var ibanService = serviceProvider.GetRequiredService<NewIban>();
+            var mediator = serviceProvider.GetRequiredService<IMediator>();
 
             // use
             var enrollCustomer = new EnrollCustomer
@@ -51,9 +57,12 @@ namespace PaymentGateway
                 UniqueIdentifier = "23"
             };
 
-            var enrollCustomerOperation = serviceProvider.GetRequiredService<EnrollCustomerOperation>();
+            //var enrollCustomerOperation = serviceProvider.GetRequiredService<EnrollCustomerOperation>();
             //enrollCustomerOperation.PerformOperation(enrollCustomer);
-            enrollCustomerOperation.Handle(enrollCustomer, default).GetAwaiter().GetResult();
+            //enrollCustomerOperation.Handle(enrollCustomer, default).GetAwaiter().GetResult();
+
+            await mediator.Send(enrollCustomer, cancellationToken);
+
 
             var makeAccountDetails = new MakeNewAccount
             {
@@ -61,13 +70,14 @@ namespace PaymentGateway
                 AccountType = "Debit",
                 Valuta = "Eur"
             };
-            var makeAccountOperation = serviceProvider.GetRequiredService<CreateAccount>();
-            //makeAccountOperation.PerformOperation(makeAccountDetails);
-            makeAccountOperation.Handle(makeAccountDetails, default).GetAwaiter().GetResult();
+            //var makeAccountOperation = serviceProvider.GetRequiredService<CreateAccount>();
+            ////makeAccountOperation.PerformOperation(makeAccountDetails);
+            //makeAccountOperation.Handle(makeAccountDetails, default).GetAwaiter().GetResult();
+            await mediator.Send(makeAccountDetails, cancellationToken);
 
 
 
-            var depositDetails = new MakeNewDeposit
+            var makeNewDeposit = new MakeNewDeposit
             {
                 Iban = (Int64.Parse(ibanService.GetNewIban()) - 1).ToString(),
                 Cnp = "23",
@@ -75,20 +85,24 @@ namespace PaymentGateway
                 Amount = 750
             };
 
-            var makeDeposit = serviceProvider.GetRequiredService<DepositMoney>();
-            //makeDeposit.PerformOperation(depositDetails);
-            makeDeposit.Handle(depositDetails, default).GetAwaiter().GetResult();
+            //var makeDeposit = serviceProvider.GetRequiredService<DepositMoney>();
+            ////makeDeposit.PerformOperation(depositDetails);
+            //makeDeposit.Handle(makeNewDeposit, default).GetAwaiter().GetResult();
 
-            var withdrawDetails = new MakeWithdraw
+            await mediator.Send(makeNewDeposit, cancellationToken);
+
+            var makeWithdraw = new MakeWithdraw
             {
                 Amount = 150,
                 Cnp = "23",
                 Iban = (long.Parse(ibanService.GetNewIban()) - 1).ToString()
             };
 
-            var makeWithdraw = serviceProvider.GetRequiredService<WithdrawMoney>();
+            // var makeWithdraw = serviceProvider.GetRequiredService<WithdrawMoney>();
             //makeWithdraw.PerformOperation(withdrawDetails);
-            makeWithdraw.Handle(withdrawDetails, default).GetAwaiter().GetResult();
+            // makeWithdraw.Handle(makeWithdraw, default).GetAwaiter().GetResult();
+
+            await mediator.Send(makeWithdraw, cancellationToken);
 
             var produs = new Product
             {
@@ -143,19 +157,23 @@ namespace PaymentGateway
                 Iban = (Int64.Parse(ibanService.GetNewIban()) - 1).ToString()
             };
 
-            var purchaseProduct = serviceProvider.GetRequiredService<PurchaseProduct>();
-            //purchaseProduct.PerformOperation(comanda);
-            purchaseProduct.Handle(comanda, default).GetAwaiter().GetResult();
+            //var purchaseProduct = serviceProvider.GetRequiredService<PurchaseProduct>();
+            ////purchaseProduct.PerformOperation(comanda);
+            //purchaseProduct.Handle(comanda, default).GetAwaiter().GetResult();
+
+            await mediator.Send(comanda, cancellationToken);
 
             var query = new Application.Queries.ListOfAccounts.Query
             {
                 PersonId = 1
             };
 
-            var handler = serviceProvider.GetRequiredService<ListOfAccounts.QueryHandler>();
-            //var result = handler.PerformOperation(query);
-            var result = handler.Handle(query, default).GetAwaiter().GetResult();
+            //var handler = serviceProvider.GetRequiredService<ListOfAccounts.QueryHandler>();
+            ////var result = handler.PerformOperation(query);
+            //var result = handler.Handle(query, default).GetAwaiter().GetResult();
 
+
+            var result = await mediator.Send(query, cancellationToken);
         }
     }
 }
