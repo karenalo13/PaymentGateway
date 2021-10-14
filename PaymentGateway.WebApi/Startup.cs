@@ -1,9 +1,11 @@
 ﻿using Abstractions;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application;
+using PaymentGateway.Application.Queries;
 using PaymentGateway.ExternalService;
 using PaymentGateway.WebApi.Swagger;
 
@@ -22,8 +24,9 @@ namespace PaymentGateway.WebApi
         {
             services.AddControllers();
             services.AddMvc(o => o.EnableEndpointRouting = false);
+            services.AddMediatR(typeof(AllEventsHandler).Assembly, typeof(ListOfAccounts).Assembly);
 
-           // services.AddSingleton<IEventSender, EventSender>();
+            // services.AddSingleton<IEventSender, EventSender>();
             services.RegisterBusinessServices(Configuration);
             services.AddSwagger(Configuration["Identity:Authority"]);
 
