@@ -5,6 +5,7 @@ using PaymentGateway.Application.ReadOperations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Threading;
+using PaymentGateway.Application.Queries;
 
 namespace PaymentGateway.WebApi.Controllers
 {

@@ -3,6 +3,7 @@ using MediatR;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.Commands;
+using PaymentGateway.PublishedLanguage.Events;
 using System;
 using System.Linq;
 using System.Threading;
@@ -12,16 +13,16 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class PurchaseProduct : IRequestHandler<Command>
     {
-        private readonly IEventSender _eventSender;
+        private readonly IMediator _mediator;
         private readonly Database _database;
 
-        public PurchaseProduct(IEventSender eventSender, Database database)
+        public PurchaseProduct(IMediator mediator, Database database)
         {
-            _eventSender = eventSender;
+            _mediator = mediator;
             _database = database;
         }
 
-        public Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             Transaction transaction = new Transaction();
 
@@ -59,10 +60,11 @@ namespace PaymentGateway.Application.WriteOperations
                 _database.ProductXTransaction.Add(pxt);
             }
 
-
+            var list = new ProductPurschased();
+            list.CommandDetails = request.Details;
             _database.SaveChanges();
-
-            return Unit.Task;
+            await _mediator.Publish(list, cancellationToken);
+            return Unit.Value;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace PaymentGateway.WebApi
             services.AddControllers();
             services.AddMvc(o => o.EnableEndpointRouting = false);
 
-            services.AddSingleton<IEventSender, EventSender>();
+           // services.AddSingleton<IEventSender, EventSender>();
             services.RegisterBusinessServices(Configuration);
             services.AddSwagger(Configuration["Identity:Authority"]);
 
