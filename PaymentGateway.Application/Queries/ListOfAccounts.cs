@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 
-namespace PaymentGateway.Application.ReadOperations
+namespace PaymentGateway.Application.Queries
 {
     public class ListOfAccounts
     {

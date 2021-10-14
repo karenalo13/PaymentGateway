@@ -45,11 +45,13 @@ namespace PaymentGateway.Application.WriteOperations
             customer.Id = _database.Persons.Count + 1;
             _database.Persons.Add(customer);
 
-            var account = new BankAccount();
-            account.Type = request.AccountType;
-            account.Currency = request.Valuta;
-            account.Balance = 0;
-            account.Iban = _ibanService.GetNewIban();
+            var account = new BankAccount
+            {
+                Type = request.AccountType,
+                Currency = request.Valuta,
+                Balance = 0,
+                Iban = _ibanService.GetNewIban()
+            };
 
             _database.BankAccounts.Add(account);
 

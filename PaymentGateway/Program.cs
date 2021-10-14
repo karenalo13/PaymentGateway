@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application;
+using PaymentGateway.Application.Queries;
 using PaymentGateway.Application.ReadOperations;
 using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.Data;
@@ -89,7 +90,7 @@ namespace PaymentGateway
 
             var produs = new Product
             {
-                ID = 1,
+                Id = 1,
                 Limit = 10,
                 Name = "Pantofi",
                 Currency = "Eur",
@@ -98,7 +99,7 @@ namespace PaymentGateway
 
             var produs1 = new Product
             {
-                ID = 2,
+                Id = 2,
                 Limit = 5,
                 Name = "pantaloni",
                 Currency = "Eur",
@@ -107,7 +108,7 @@ namespace PaymentGateway
 
             var produs2 = new Product
             {
-                ID = 3,
+                Id = 3,
                 Limit = 3,
                 Name = "Camasa",
                 Currency = "Eur",
@@ -122,14 +123,14 @@ namespace PaymentGateway
 
             var prodCmd1 = new CommandDetails
             {
-                idProd = 1,
+                ProductId = 1,
                 Quantity = 2
             };
             listaProduse.Add(prodCmd1);
 
             var prodCmd2 = new CommandDetails
             {
-                idProd = 2,
+                ProductId = 2,
                 Quantity = 3
             };
             listaProduse.Add(prodCmd2);
@@ -144,7 +145,7 @@ namespace PaymentGateway
             //purchaseProduct.PerformOperation(comanda);
             purchaseProduct.Handle(comanda, default).GetAwaiter().GetResult();
 
-            var query = new Application.ReadOperations.ListOfAccounts.Query
+            var query = new Application.Queries.ListOfAccounts.Query
             {
                 PersonId = 1
             };
