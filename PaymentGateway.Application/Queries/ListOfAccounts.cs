@@ -17,7 +17,7 @@ namespace PaymentGateway.Application.Queries
         {
             private readonly Database _database;
 
-            public Validator(Database database)
+            public Validator(Database _database)
             {
                 //_database = database;
                 RuleFor(q => q).Must(query =>

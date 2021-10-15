@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentValidation;
+using MediatR.Pipeline;
 
 namespace PaymentGateway
 {
@@ -37,10 +39,23 @@ namespace PaymentGateway
 
             var source = new CancellationTokenSource();
             var cancellationToken = source.Token;
-            services.AddMediatR(typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly);
+            services.Scan(scan => scan
+                 .FromAssemblyOf<ListOfAccounts>()
+                 .AddClasses(classes => classes.AssignableTo<IValidator>())
+                 .AsImplementedInterfaces()
+                 .WithScopedLifetime());
+
+            services.AddMediatR(new[] { typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly }); // get all IRequestHandler and INotificationHandler classes
+
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestPreProcessorBehavior<,>));
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestPostProcessorBehavior<,>));
+            services.AddScoped(typeof(IRequestPreProcessor<>), typeof(ValidationPreProcessor<>));
+
+
 
             services.AddScopedContravariant<INotificationHandler<INotification>, AllEventsHandler>(typeof(CustomerEnrolled).Assembly);
 
+            services.AddMediatR(new[] { typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly }); // get all IRequestHandler and INotificationHandler classes
 
             //services.AddSingleton<IEventSender, EventSender>();
             services.AddSingleton(Configuration);
