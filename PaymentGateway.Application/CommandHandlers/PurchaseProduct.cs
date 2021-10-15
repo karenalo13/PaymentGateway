@@ -9,9 +9,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PaymentGateway.Application.WriteOperations
+namespace PaymentGateway.Application.CommandHandlers
 {
-    public class PurchaseProduct : IRequestHandler<Command>
+    public class PurchaseProduct : IRequestHandler<PurchaseCommand>
     {
         private readonly IMediator _mediator;
         private readonly Database _database;
@@ -22,7 +22,7 @@ namespace PaymentGateway.Application.WriteOperations
             _database = database;
         }
 
-        public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(PurchaseCommand request, CancellationToken cancellationToken)
         {
             Transaction transaction = new Transaction();
 
@@ -60,10 +60,10 @@ namespace PaymentGateway.Application.WriteOperations
                 _database.ProductXTransaction.Add(pxt);
             }
 
-            var list = new ProductPurschased();
-            list.CommandDetails = request.Details;
+            var productPurschased = new ProductPurschased();
+            productPurschased.CommandDetails = request.Details;
             _database.SaveChanges();
-            await _mediator.Publish(list, cancellationToken);
+            await _mediator.Publish(productPurschased, cancellationToken);
             return Unit.Value;
         }
     }

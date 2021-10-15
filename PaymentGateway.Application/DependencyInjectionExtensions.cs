@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application.Queries;
 using PaymentGateway.Application.ReadOperations;
-using PaymentGateway.Application.WriteOperations;
+using PaymentGateway.Application.CommandHandlers;
 using static PaymentGateway.Application.Queries.ListOfAccounts;
 
 namespace PaymentGateway.Application
@@ -20,7 +20,7 @@ namespace PaymentGateway.Application
             services.AddSingleton<NewIban>();
             services.AddSingleton<Data.Database>();
 
-            services.AddTransient<IValidator<Query>, ListOfAccounts.Validator>();
+            //services.AddTransient<IValidator<Query>, ListOfAccounts.Validator>();
             services.AddTransient<QueryHandler>();
 
             services.AddSingleton(sp =>

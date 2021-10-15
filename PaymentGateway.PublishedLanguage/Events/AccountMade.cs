@@ -5,7 +5,7 @@ namespace PaymentGateway.PublishedLanguage.Events
 {
     public class AccountMade: INotification
     {
-        public String Name { get; set; }
+        public string Name { get; set; }
         
     }
 }

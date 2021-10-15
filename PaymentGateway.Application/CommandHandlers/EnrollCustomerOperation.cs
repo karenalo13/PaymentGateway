@@ -9,7 +9,7 @@ using PaymentGateway.PublishedLanguage.Commands;
 using System.Threading;
 using PaymentGateway.PublishedLanguage.Events;
 
-namespace PaymentGateway.Application.WriteOperations
+namespace PaymentGateway.Application.CommandHandlers
 {
     public class EnrollCustomerOperation : IRequestHandler<EnrollCustomer>
     {

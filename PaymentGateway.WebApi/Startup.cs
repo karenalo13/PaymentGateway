@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application;
 using PaymentGateway.Application.Queries;
 using PaymentGateway.ExternalService;
+using PaymentGateway.PublishedLanguage.Events;
 using PaymentGateway.WebApi.Swagger;
 
 namespace PaymentGateway.WebApi
@@ -24,7 +25,13 @@ namespace PaymentGateway.WebApi
         {
             services.AddControllers();
             services.AddMvc(o => o.EnableEndpointRouting = false);
-            services.AddMediatR(typeof(AllEventsHandler).Assembly, typeof(ListOfAccounts).Assembly);
+
+            var firstAssembly = typeof(ListOfAccounts).Assembly; // handlere c1..c3
+            //var firstAssembly = typeof(Program).Assembly; // handler generic
+            var secondAssembly = typeof(AllEventsHandler).Assembly; // catch all
+
+            services.AddMediatR(new[] { firstAssembly, secondAssembly }); // get all IRequestHandler and INotificationHandler classes
+            services.AddScopedContravariant<INotificationHandler<INotification>, AllEventsHandler>(typeof(CustomerEnrolled).Assembly);
 
             // services.AddSingleton<IEventSender, EventSender>();
             services.RegisterBusinessServices(Configuration);

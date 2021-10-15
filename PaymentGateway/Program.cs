@@ -5,11 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application;
 using PaymentGateway.Application.Queries;
 using PaymentGateway.Application.ReadOperations;
-using PaymentGateway.Application.WriteOperations;
+using PaymentGateway.Application.CommandHandlers;
 using PaymentGateway.Data;
 using PaymentGateway.ExternalService;
 using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.Commands;
+using PaymentGateway.PublishedLanguage.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,10 +37,13 @@ namespace PaymentGateway
 
             var source = new CancellationTokenSource();
             var cancellationToken = source.Token;
+            services.AddMediatR(typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly);
+
+            services.AddScopedContravariant<INotificationHandler<INotification>, AllEventsHandler>(typeof(CustomerEnrolled).Assembly);
+
 
             //services.AddSingleton<IEventSender, EventSender>();
             services.AddSingleton(Configuration);
-            services.AddMediatR(typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly);
 
             // build
             var serviceProvider = services.BuildServiceProvider();
@@ -151,10 +155,10 @@ namespace PaymentGateway
             };
             listaProduse.Add(prodCmd2);
 
-            var comanda = new Command
+            var comanda = new PurchaseCommand
             {
                 Details = listaProduse,
-                Iban = (Int64.Parse(ibanService.GetNewIban()) - 1).ToString()
+                Iban = (int.Parse(ibanService.GetNewIban()) - 1).ToString()
             };
 
             //var purchaseProduct = serviceProvider.GetRequiredService<PurchaseProduct>();
