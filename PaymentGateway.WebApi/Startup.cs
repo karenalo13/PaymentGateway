@@ -59,6 +59,8 @@ namespace PaymentGateway.WebApi
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
         {
+            app.UseMiddleware<ErrorMiddleware>(); // error 
+
             app.UseCors(cors =>
             {
                 cors
