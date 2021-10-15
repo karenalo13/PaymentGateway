@@ -10,7 +10,7 @@ using PaymentGateway.Application;
 using PaymentGateway.Application.Queries;
 using PaymentGateway.ExternalService;
 using PaymentGateway.PublishedLanguage.Events;
-
+using PaymentGateway.WebApi.Middleware;
 using PaymentGateway.WebApi.Swagger;
 
 namespace PaymentGateway.WebApi
