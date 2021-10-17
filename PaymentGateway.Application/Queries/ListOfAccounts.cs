@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using FluentValidation;
+using static PaymentGateway.Application.Queries.ListOfAccounts.Validator.Validator2;
 
 namespace PaymentGateway.Application.Queries
 {
@@ -35,58 +36,29 @@ namespace PaymentGateway.Application.Queries
             {
                 public Validator2(Database database)
                 {
-                    int state = 0;
-
-
-                    RuleFor(q => q).Must(person =>
+                    RuleFor(q => q).Must(q =>
                     {
-                        return person.PersonId.HasValue || !string.IsNullOrEmpty(person.Cnp);
-                    }).WithMessage("Customer data is invalid - personid");
+                        return q.PersonId.HasValue || !string.IsNullOrEmpty(q.Cnp);
+                    }).WithMessage("Customer data is invalid");
 
-                    //RuleFor(q => q.PersonId).Must(personId =>
-                    //{
-                    //    return personId.HasValue;
-                    //}).WithMessage("Customer data is invalid - personid");
-
-
-                    //RuleFor(q => q.Cnp).Must(cnp =>
-                    //{
-                    //    return !string.IsNullOrEmpty(cnp);
-                    //}).WithMessage("CNP is empty");
-
-
-                    //RuleFor(q => q.PersonId).Must(personId =>
-                    //{
-                    //    if (!personId.HasValue) state++;
-                    //    return true;
-                    //}).WithMessage("Customer data is invalid - personid");
-
-
-                    //RuleFor(q => q.Cnp).Must(cnp =>
-                    //{
-                    //    if (string.IsNullOrEmpty(cnp)) state++;
-                    //    return true;
-                    //}).WithMessage("CNP is empty");
-
-
-                    //RuleFor(q => q).Must(q =>
-                    //{
-                        
-                    //    return state==0;
-                    //}).WithMessage("CNP is empty");
-
-
+                    RuleFor(q => q.Cnp).Must(cnp =>
+                    {
+                        if (string.IsNullOrEmpty(cnp))
+                        {
+                            return true;
+                        }
+                        return cnp.Length == 13;
+                    }).WithMessage("CNP has wrong lenght. Expected 13");
 
                     RuleFor(q => q.PersonId).Must(personId =>
                     {
-
-                        var exists = database.Persons.Any(x => x.Id == personId);
-                        return exists;
-                    }).WithMessage("Customer does not exist");
-
+                        if (!personId.HasValue)
+                        {
+                            return true;
+                        }
+                        return personId.Value > 0;
+                    }).WithMessage("Person id is not positive");
                 }
-            }
-        }
         public class Query : IRequest<List<Model>>
         {
             public int? PersonId { get; set; }
@@ -101,13 +73,13 @@ namespace PaymentGateway.Application.Queries
             public QueryHandler(Database database)
             {
                 _database = database;
-                
+
             }
 
             public Task<List<Model>> Handle(Query request, CancellationToken cancellationToken)
             {
 
-              
+
 
                 var person = request.PersonId.HasValue ?
                    _database.Persons.FirstOrDefault(x => x.Id == request.PersonId) :
