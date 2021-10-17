@@ -18,7 +18,7 @@ namespace PaymentGateway.Application
             services.AddTransient<WithdrawMoney>();
             services.AddTransient<PurchaseProduct>();
             services.AddSingleton<NewIban>();
-            services.AddSingleton<Data.Database>();
+            services.AddSingleton<Data.PaymentDbContext>();
 
             //services.AddTransient<IValidator<Query>, ListOfAccounts.Validator>();
             services.AddTransient<QueryHandler>();

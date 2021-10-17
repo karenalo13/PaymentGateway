@@ -6,21 +6,21 @@ namespace PaymentGateway.Application.ReadOperations
 {
     public class NewIban
     {
-        private readonly Database _database;
+        private readonly PaymentDbContext _dbContext;
 
-        public NewIban(Database database)
+        public NewIban(PaymentDbContext dbContext)
         {
-            _database = database;
+            _dbContext = dbContext;
         }
 
         public string GetNewIban()
         {
-            List<string> ibans = _database.BankAccounts.Select(x => x.Iban).ToList();
+            List<string> ibans = _dbContext.BankAccounts.Select(x => x.Iban).ToList();
            
             if (ibans.Count == 0)
                 return "1";
             
-            return (_database.BankAccounts.Count()+1).ToString();
+            return (_dbContext.BankAccounts.Count()+1).ToString();
             //return (int.Parse(ibans.Last()) + 1).ToString();
         }
     }

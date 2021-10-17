@@ -14,28 +14,28 @@ namespace PaymentGateway.Application.CommandHandlers
     public class PurchaseProduct : IRequestHandler<PurchaseCommand>
     {
         private readonly IMediator _mediator;
-        private readonly Database _database;
+        private readonly PaymentDbContext _dbContext;
 
-        public PurchaseProduct(IMediator mediator, Database database)
+        public PurchaseProduct(IMediator mediator, PaymentDbContext dbContext)
         {
             _mediator = mediator;
-            _database = database;
+            _dbContext = dbContext;
         }
 
         public async Task<Unit> Handle(PurchaseCommand request, CancellationToken cancellationToken)
         {
             Transaction transaction = new Transaction();
 
-            BankAccount account = _database.BankAccounts.FirstOrDefault(x => x.Iban == request.Iban);
+            BankAccount account = _dbContext.BankAccounts.FirstOrDefault(x => x.Iban == request.Iban);
 
             if (account == null)
             {
                 throw new Exception("Invalid Account");
             }
-            double total = 0;
+            decimal total = 0;
             foreach (var item in request.Details)
             {
-                Product product = _database.Products.FirstOrDefault(x => x.Id == item.ProductId);
+                Product product = _dbContext.Products.FirstOrDefault(x => x.Id == item.ProductId);
 
                 if (product.Limit < item.Quantity)
                 {
@@ -57,12 +57,12 @@ namespace PaymentGateway.Application.CommandHandlers
                 product.Limit -= item.Quantity;
 
 
-                _database.ProductXTransaction.Add(pxt);
+                _dbContext.ProductXTransaction.Add(pxt);
             }
 
             var productPurschased = new ProductPurschased();
             productPurschased.CommandDetails = request.Details;
-            _database.SaveChanges();
+            _dbContext.SaveChanges();
             await _mediator.Publish(productPurschased, cancellationToken);
             return Unit.Value;
         }

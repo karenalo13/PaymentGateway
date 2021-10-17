@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace PaymentGateway.Data
 {
-    public class Database
+    public class PaymentDbContext
     {
         public List<Person> Persons = new List<Person>();
         public List<Product> Products = new List<Product>();

@@ -14,12 +14,12 @@ namespace PaymentGateway.Application.CommandHandlers
     public class EnrollCustomerOperation : IRequestHandler<EnrollCustomer>
     {
         private readonly IMediator _mediator;
-        private readonly Database _database;
+        private readonly PaymentDbContext _dbContext;
         private readonly NewIban _ibanService;
-        public EnrollCustomerOperation(IMediator mediator, Database database, NewIban ibanService)
+        public EnrollCustomerOperation(IMediator mediator, PaymentDbContext dbContext, NewIban ibanService)
         {
             _mediator = mediator;
-            _database = database;
+            _dbContext = dbContext;
             _ibanService = ibanService;
         }
 
@@ -43,8 +43,8 @@ namespace PaymentGateway.Application.CommandHandlers
             {
                 throw new Exception("Unsupported person type");
             }
-            customer.Id = _database.Persons.Count + 1;
-            _database.Persons.Add(customer);
+            customer.Id = _dbContext.Persons.Count + 1;
+            _dbContext.Persons.Add(customer);
 
             var account = new BankAccount
             {
@@ -54,9 +54,9 @@ namespace PaymentGateway.Application.CommandHandlers
                 Iban = _ibanService.GetNewIban()
             };
 
-            _database.BankAccounts.Add(account);
+            _dbContext.BankAccounts.Add(account);
 
-            _database.SaveChanges();
+            _dbContext.SaveChanges();
 
             var ec = new CustomerEnrolled
             {

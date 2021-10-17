@@ -16,20 +16,20 @@ namespace PaymentGateway.Application.CommandHandlers
     {
         private readonly IMediator _mediator;
         private readonly AccountOptions _accountOptions;
-        private readonly Database _database;
+        private readonly PaymentDbContext _dbContext;
         private readonly NewIban _ibanService;
 
-        public CreateAccount(IMediator mediator, AccountOptions accountOptions, Database database, NewIban ibanService)
+        public CreateAccount(IMediator mediator, AccountOptions accountOptions, PaymentDbContext dbContext, NewIban ibanService)
         {
             _mediator = mediator;
             _accountOptions = accountOptions;
-            _database = database;
+            _dbContext = dbContext;
             _ibanService = ibanService;
         }
 
         public async Task<Unit> Handle(MakeNewAccount request, CancellationToken cancellationToken)
         {
-            var user = _database.Persons.FirstOrDefault(e => e.Cnp == request.UniqueIdentifier);
+            var user = _dbContext.Persons.FirstOrDefault(e => e.Cnp == request.UniqueIdentifier);
             if (user == null)
             {
                 throw new Exception("User invalid");
@@ -44,9 +44,9 @@ namespace PaymentGateway.Application.CommandHandlers
                 Limit = 200
             };
 
-            _database.BankAccounts.Add(account);
+            _dbContext.BankAccounts.Add(account);
             user.Accounts.Add(account);
-            _database.SaveChanges();
+            _dbContext.SaveChanges();
 
             AccountMade ec = new AccountMade
             {
