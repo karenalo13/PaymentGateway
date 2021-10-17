@@ -41,7 +41,8 @@ namespace PaymentGateway.Application.CommandHandlers
                 Currency = request.Valuta,
                 Balance = _accountOptions.InitialBalance,
                 Iban = _ibanService.GetNewIban(),
-                Limit = 200
+                Limit = 200,
+                Status = "Active"
             };
 
             _dbContext.BankAccounts.Add(account);
