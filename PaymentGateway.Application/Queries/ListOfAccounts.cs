@@ -33,23 +33,57 @@ namespace PaymentGateway.Application.Queries
 
             public class Validator2 : AbstractValidator<Query>
             {
-                public Validator2(Database _database)
+                public Validator2(Database database)
                 {
-                    //   RuleFor(q => q).Must(query =>
-                    //{
-                    //    var person = query.PersonId.HasValue ?
-                    //    _database.Persons.FirstOrDefault(x => x.Id == query.PersonId) :
-                    //    _database.Persons.FirstOrDefault(x => x.Cnp == query.Cnp);
+                    int state = 0;
 
 
-                    //    return person != null;
-                    //}).WithMessage("Customer not found");
-
-
-                    RuleFor(q => q).Must(query =>
+                    RuleFor(q => q).Must(person =>
                     {
-                        return query.PersonId.HasValue && !string.IsNullOrEmpty(query.Cnp);
-                    }).WithMessage("Customer data is invalid");
+                        return person.PersonId.HasValue || !string.IsNullOrEmpty(person.Cnp);
+                    }).WithMessage("Customer data is invalid - personid");
+
+                    //RuleFor(q => q.PersonId).Must(personId =>
+                    //{
+                    //    return personId.HasValue;
+                    //}).WithMessage("Customer data is invalid - personid");
+
+
+                    //RuleFor(q => q.Cnp).Must(cnp =>
+                    //{
+                    //    return !string.IsNullOrEmpty(cnp);
+                    //}).WithMessage("CNP is empty");
+
+
+                    //RuleFor(q => q.PersonId).Must(personId =>
+                    //{
+                    //    if (!personId.HasValue) state++;
+                    //    return true;
+                    //}).WithMessage("Customer data is invalid - personid");
+
+
+                    //RuleFor(q => q.Cnp).Must(cnp =>
+                    //{
+                    //    if (string.IsNullOrEmpty(cnp)) state++;
+                    //    return true;
+                    //}).WithMessage("CNP is empty");
+
+
+                    //RuleFor(q => q).Must(q =>
+                    //{
+                        
+                    //    return state==0;
+                    //}).WithMessage("CNP is empty");
+
+
+
+                    RuleFor(q => q.PersonId).Must(personId =>
+                    {
+
+                        var exists = database.Persons.Any(x => x.Id == personId);
+                        return exists;
+                    }).WithMessage("Customer does not exist");
+
                 }
             }
         }
